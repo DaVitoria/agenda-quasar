@@ -48,14 +48,14 @@
         side>
         <div class="row">
           <q-btn
-          @click.stop=" editDado(index)"
+          @click.stop="editDado(index)"
           flat
           round
           dense
           color="positive"
           icon="edit" />
           <q-btn
-          @click.stop="deleteTask(index)"
+          @click.stop="deleteDado(index)"
           flat
           round
           dense
@@ -87,12 +87,12 @@ export default defineComponent({
   data(){
     return{
       newDado: '',
-      dados: []
-    }
+      dados: JSON.parse(localStorage.getItem("dados")) || [],
+    };
   },
 
   methods: {
-    deleteTask(index){
+    deleteDado(index){
       this.$q.dialog({
         title: 'Confirmação',
         message: 'Tem a ceteza que pretende apagar?',
@@ -100,8 +100,9 @@ export default defineComponent({
         persistent: true
       }).onOk(() => {
         this.dados.splice(index, 1)
+        localStorage.setItem("dados", JSON.stringify(this.dados));
         this.$q.notify('Apagado com sucesso!')
-      })
+      });
     },
 
     addDado(){
@@ -109,19 +110,28 @@ export default defineComponent({
         title: this.newDado,
         done: false
       })
-      this.newDado=''
+      this.newDado='',
+      localStorage.setItem("dados", JSON.stringify(this.dados));
     },
 
-    editDado(index){
+    editDado(index) {
+      const newTitle = this.$q.dialog({
+        title: "Editar Tarefa",
+        prompt: {
+        model: this.dados[index].title,
+        type: "text",
+        },
+        cancel: true,
+        persistent: true,
+      }).onOk((data) => {
+        this.dados[index].title = data;
+        localStorage.setItem("dados", JSON.stringify(this.dados));
+        this.$q.notify("Edição sucedida!");
+      });
 
-      this.dados.updated({
-        title: this.title,
-        done: false
-      })
-      this.newDado.updated(index, 1)
-    }
-  }
-})
+    },
+  },
+});
 </script>
 
 <style lang="scss">
@@ -134,5 +144,9 @@ export default defineComponent({
 
   .no-tasks{
     opacity: 0.5;
+  }
+
+  .notify{
+    color:aqua;
   }
 </style>
